@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Model weights (too large for git — download instructions in README)
+outputs/adapter/
+*.bin
+*.safetensors
+*.pt
+*.pth
+
+# Large data files (keep processed JSONL, skip raw XLSX if >50MB)
+data/raw/*.xlsx
+data/raw/*.csv
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+wandb/
+runs/

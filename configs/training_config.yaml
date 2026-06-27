@@ -1,0 +1,92 @@
+# ─────────────────────────────────────────────────────────────
+# Lending AI SLM — Training Configuration
+# Model: meta-llama/Llama-3.2-3B-Instruct
+# ─────────────────────────────────────────────────────────────
+
+model:
+  name: "meta-llama/Llama-3.2-3B-Instruct"
+  # Fallback if Llama is unavailable (no HF gating, similar capability)
+  fallback: "microsoft/phi-2"
+
+# ── Quantization (QLoRA) ─────────────────────────────────────
+# 4-bit NF4 quantization keeps the model within 8–16 GB VRAM.
+# Double quantization further reduces memory by ~0.4 bits/param.
+quantization:
+  load_in_4bit: true
+  bnb_4bit_quant_type: "nf4"
+  bnb_4bit_compute_dtype: "bfloat16"
+  bnb_4bit_use_double_quant: true
+
+# ── LoRA Adapter ─────────────────────────────────────────────
+# r=16 provides sufficient expressiveness for domain adaptation
+# without overfitting a 2,400-example dataset.
+# alpha=32 (2× rank) is the standard scaling for stable training.
+# Targeting all 4 attention projection layers maximises adaptation
+# surface while staying parameter-efficient.
+lora:
+  r: 16
+  lora_alpha: 32
+  lora_dropout: 0.05
+  bias: "none"
+  task_type: "CAUSAL_LM"
+  target_modules:
+    - "q_proj"
+    - "k_proj"
+    - "v_proj"
+    - "o_proj"
+  # Uncomment to also adapt MLP layers (more params, higher memory):
+  # - "gate_proj"
+  # - "up_proj"
+  # - "down_proj"
+
+# ── Training Hyperparameters ──────────────────────────────────
+training:
+  output_dir: "./outputs/adapter"
+  num_train_epochs: 2
+  # Effective batch = per_device_train_batch_size × gradient_accumulation_steps = 16
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 4
+  gradient_accumulation_steps: 4
+  gradient_checkpointing: true     # trades compute for memory
+
+  learning_rate: 2.0e-4
+  lr_scheduler_type: "cosine"
+  warmup_steps: 100
+  weight_decay: 0.001
+
+  max_seq_length: 512              # all examples fit; no truncation loss
+  fp16: false
+  bf16: true                       # use bfloat16 if GPU supports it (A100/H100/newer)
+  # If bf16 fails, flip to: fp16: true, bf16: false
+
+  evaluation_strategy: "steps"
+  eval_steps: 100
+  save_strategy: "steps"
+  save_steps: 100
+  save_total_limit: 2
+  load_best_model_at_end: true
+  metric_for_best_model: "eval_loss"
+
+  logging_steps: 25
+  report_to: "none"               # set to "wandb" if using Weights & Biases
+  seed: 42
+
+  # SFT-specific
+  packing: false                   # packing can improve throughput but may
+                                   # cut mid-reasoning completions — disabled
+                                   # for reasoning quality
+
+# ── Data Paths ────────────────────────────────────────────────
+data:
+  train_file: "data/processed/train.jsonl"
+  val_file:   "data/processed/val.jsonl"
+  test_file:  "data/processed/test.jsonl"
+
+# ── Memory Budgets (for reference) ───────────────────────────
+# Llama-3.2-3B @ 4-bit NF4:  ~2.5 GB
+# LoRA adapters (r=16):       ~0.1 GB
+# Optimizer state:            ~1.5 GB
+# Activations + overhead:     ~2.5 GB
+# ─────────────────────────────────────────────────────────────
+# Estimated peak VRAM:        ~6.5–8 GB
+# Safe on:  12 GB (3060/3080), 16 GB (A4000/4080), 24 GB (A10)
