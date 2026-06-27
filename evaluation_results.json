@@ -1,0 +1,16 @@
+{
+  "risk_accuracy_base": 0.36363636363636365,
+  "risk_accuracy_ft": 0.36363636363636365,
+  "risk_f1_macro_base": 0.36543209876543203,
+  "risk_f1_macro_ft": 0.36543209876543203,
+  "approval_accuracy_base": 0.24242424242424243,
+  "approval_accuracy_ft": 0.24242424242424243,
+  "approval_f1_macro_base": 0.19259259259259257,
+  "approval_f1_macro_ft": 0.19259259259259257,
+  "high_risk_recall_base": 0.36363636363636365,
+  "high_risk_recall_ft": 0.36363636363636365,
+  "domain_recall_risk_base": 0.5454545454545455,
+  "domain_recall_risk_ft": 0.5454545454545455,
+  "domain_recall_sum_base": 0.4444444444444444,
+  "domain_recall_sum_ft": 0.4444444444444444
+}

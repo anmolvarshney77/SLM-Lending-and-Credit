@@ -1,0 +1,10 @@
+{
+  "train_runtime": 2671.3813,
+  "train_samples_per_second": 0.09,
+  "train_steps_per_second": 0.011,
+  "total_flos": 3540785118658560.0,
+  "train_loss": 0.8621230125427246,
+  "epoch": 0.2,
+  "elapsed_minutes": 44.53173290491104,
+  "model_name": "meta-llama/Llama-3.2-3B-Instruct"
+}
