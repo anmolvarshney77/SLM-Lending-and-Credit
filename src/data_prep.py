@@ -85,7 +85,7 @@ LOAN_PRODUCT_MAP = {
     "MSME":          "MSME Loan",
     "SME Loan":      "MSME Loan",
     "Enterprise Loan": "MSME Loan",
-    # Consumer Durable Loan variants
+    # Consumer Durable Loan variants:
     "Consumer Loan":  "Consumer Durable Loan",
     "CD Loan":        "Consumer Durable Loan",
     "Durable Loan":   "Consumer Durable Loan",
