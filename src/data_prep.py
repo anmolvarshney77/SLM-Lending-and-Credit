@@ -92,7 +92,7 @@ LOAN_PRODUCT_MAP = {
 }
 
 OCCUPATION_MAP = {
-    # Salaried variants
+    # Salaried variants:x
     "SALARIED":           "Salaried",
     "salaried":           "Salaried",
     "Permanent Employee": "Salaried",
