@@ -124,7 +124,6 @@ def generate_response(model, tokenizer, messages: list[dict], max_new_tokens: in
             **inputs,
             max_new_tokens=max_new_tokens,
             do_sample=False,       # greedy decoding for reproducibility
-            temperature=1.0,
             pad_token_id=tokenizer.pad_token_id,
             eos_token_id=tokenizer.eos_token_id,
         )
