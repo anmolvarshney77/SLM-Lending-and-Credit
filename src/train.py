@@ -235,7 +235,7 @@ def run_training(config: dict):
     print("  TRAINING SUMMARY")
     print("=" * 60)
     print(f"  Total training time:  {elapsed/60:.1f} minutes")
-    print(f"  Total steps:          {metrics.get('train_steps_per_second', 'N/A')}")
+    print(f"  Total steps:          {metrics.get('train_steps', 'N/A')}")
     print(f"  Final training loss:  {metrics.get('train_loss', 'N/A'):.4f}")
     print(f"  Samples/second:       {metrics.get('train_samples_per_second', 'N/A'):.1f}")
     print(f"  Model saved to:       {output_dir}")
