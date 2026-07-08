@@ -92,7 +92,7 @@ LOAN_PRODUCT_MAP = {
 }
 
 OCCUPATION_MAP = {
-    # Salaried variants:x
+    # Salaried variants:
     "SALARIED":           "Salaried",
     "salaried":           "Salaried",
     "Permanent Employee": "Salaried",
@@ -730,9 +730,9 @@ def build_examples(df: pd.DataFrame) -> list[dict]:
     """
     examples = []
 
-    for idx, row in df.iterrows():
+    for enum_idx, (_, row) in enumerate(df.iterrows()):
         context = build_borrower_context(row)
-        template_idx = idx % 3  # cycle through 3 prompt variants
+        template_idx = enum_idx % 3  # cycle through 3 prompt variants
 
         tasks = [
             (SUMMARY_PROMPTS[template_idx],  generate_summary_completion),
