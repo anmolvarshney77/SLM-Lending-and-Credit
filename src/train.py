@@ -231,13 +231,15 @@ def run_training(config: dict):
 
     # ── 10. Training summary ─────────────────────────────────
     metrics = train_result.metrics
+    train_loss = metrics.get("train_loss")
+    samples_per_second = metrics.get("train_samples_per_second")
     print("\n" + "=" * 60)
     print("  TRAINING SUMMARY")
     print("=" * 60)
     print(f"  Total training time:  {elapsed/60:.1f} minutes")
-    print(f"  Total steps:          {metrics.get('train_steps', 'N/A')}")
-    print(f"  Final training loss:  {metrics.get('train_loss', 'N/A'):.4f}")
-    print(f"  Samples/second:       {metrics.get('train_samples_per_second', 'N/A'):.1f}")
+    print(f"  Total steps:          {trainer.state.global_step}")
+    print(f"  Final training loss:  {train_loss:.4f}" if train_loss is not None else "  Final training loss:  N/A")
+    print(f"  Samples/second:       {samples_per_second:.1f}" if samples_per_second is not None else "  Samples/second:       N/A")
     print(f"  Model saved to:       {output_dir}")
     print("=" * 60)
 
