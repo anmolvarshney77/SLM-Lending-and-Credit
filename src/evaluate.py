@@ -165,8 +165,34 @@ def compute_classification_metrics(y_true: list, y_pred: list, labels: list) -> 
     return metrics
 
 
+def _import_hf_evaluate_package():
+    """Import the pip `evaluate` package by name.
+
+    This script is itself named evaluate.py, and `python src/evaluate.py`
+    puts src/ at the front of sys.path — so a plain `import evaluate` would
+    silently re-import this file instead of the pip package. Evict any such
+    self-import from the cache and hide this script's directory before
+    resolving the real module.
+    """
+    import importlib
+    import sys as _sys
+
+    this_file = str(Path(__file__).resolve())
+    cached = _sys.modules.get("evaluate")
+    if cached is not None and getattr(cached, "__file__", None) == this_file:
+        del _sys.modules["evaluate"]
+
+    script_dir = str(Path(__file__).resolve().parent)
+    original_path = _sys.path
+    _sys.path = [p for p in original_path if p not in ("", script_dir)]
+    try:
+        return importlib.import_module("evaluate")
+    finally:
+        _sys.path = original_path
+
+
 def compute_rouge_metrics(predictions: list[str], references: list[str]) -> dict:
-    import evaluate as hf_evaluate
+    hf_evaluate = _import_hf_evaluate_package()
     rouge = hf_evaluate.load("rouge")
     result = rouge.compute(predictions=predictions, references=references)
     return {k: round(v, 4) for k, v in result.items()}
