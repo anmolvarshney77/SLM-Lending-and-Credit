@@ -279,6 +279,7 @@ def derive_risk_label(row: pd.Series) -> str:
       - Bureau score < 650
       - Current DPD > 60 (serious delinquency)
       - Null LAST_PAYMENT_DATE (no payment on record)
+      - Collection bucket 90+ (near-default, per system-prompt definition)
 
     Medium Risk triggers (any one, no High triggers):
       - Bureau score 650–699
@@ -302,7 +303,13 @@ def derive_risk_label(row: pd.Series) -> str:
         return "High Risk"
     if dpd > 60:
         return "High Risk"
-    if row["LAST_PAYMENT_DATE"] is pd.NaT and row["LOAN_STATUS"] == "Active":
+    if pd.isna(row["LAST_PAYMENT_DATE"]) and row["LOAN_STATUS"] == "Active":
+        return "High Risk"
+    # 90+ collection bucket means the account has, at some point, crossed the
+    # near-default threshold described in the system prompt — treat as High
+    # Risk even if CURRENT_DPD has since been reset (e.g. a partial catch-up
+    # payment), consistent with dpd > 60 above.
+    if bucket == "90+":
         return "High Risk"
 
     # Medium Risk
@@ -314,7 +321,7 @@ def derive_risk_label(row: pd.Series) -> str:
         return "Medium Risk"
     if max_dpd > 90:
         return "Medium Risk"
-    if bucket in ("31-60", "61-90", "90+"):
+    if bucket in ("31-60", "61-90"):
         return "Medium Risk"
 
     return "Low Risk"
