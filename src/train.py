@@ -71,7 +71,7 @@ def run_training(config: dict):
         TrainingArguments,
     )
     from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
-    from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
+    from trl import SFTTrainer
 
     print("=" * 60)
     print("  LENDING AI — QLoRA FINE-TUNING")
@@ -109,6 +109,7 @@ def run_training(config: dict):
     print(f"\n[Model] Loading {model_name} with 4-bit quantization...")
     print("[Model] This may take 1–3 minutes on first run (downloading ~1.5 GB)")
 
+    used_fallback = False
     try:
         model = AutoModelForCausalLM.from_pretrained(
             model_name,
@@ -129,6 +130,7 @@ def run_training(config: dict):
             torch_dtype=compute_dtype,
         )
         model_name = fallback
+        used_fallback = True
 
     model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=True)
     model.config.use_cache = False  # required when gradient_checkpointing=True
@@ -141,13 +143,17 @@ def run_training(config: dict):
 
     # ── 5. Apply LoRA ────────────────────────────────────────
     l_cfg = config["lora"]
+    target_modules = l_cfg["target_modules"]
+    if used_fallback:
+        target_modules = config["model"].get("fallback_target_modules", target_modules)
+        print(f"[LoRA]  Using fallback target_modules for {model_name}: {target_modules}")
     lora_config = LoraConfig(
         r=l_cfg["r"],
         lora_alpha=l_cfg["lora_alpha"],
         lora_dropout=l_cfg["lora_dropout"],
         bias=l_cfg["bias"],
         task_type=l_cfg["task_type"],
-        target_modules=l_cfg["target_modules"],
+        target_modules=target_modules,
     )
     model = get_peft_model(model, lora_config)
 
