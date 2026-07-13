@@ -151,6 +151,9 @@ def normalize_categoricals(df: pd.DataFrame) -> pd.DataFrame:
     df["GENDER"] = df["GENDER"].map(
         lambda x: GENDER_MAP.get(x, x) if pd.notna(x) else x
     )
+    unknown_gender = set(df["GENDER"].dropna()) - {"Male", "Female"}
+    if unknown_gender:
+        print(f"[Warn]  Unmapped GENDER values: {unknown_gender}")
 
     print(f"[Norm]  LOAN_PRODUCT unique values: {sorted(df['LOAN_PRODUCT'].dropna().unique())}")
     print(f"[Norm]  OCCUPATION unique values:   {sorted(df['OCCUPATION'].unique())}")
@@ -350,6 +353,15 @@ def derive_approval_label(row: pd.Series) -> str:
 
 def derive_labels(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
+
+    # DEFAULT_FLAG/WRITE_OFF_FLAG nulls would silently evaluate as "no default"
+    # in the `== 1` checks below — treat missing as not-defaulted explicitly.
+    n_null_flags = df["DEFAULT_FLAG"].isna().sum() + df["WRITE_OFF_FLAG"].isna().sum()
+    if n_null_flags:
+        print(f"[Warn]  {n_null_flags} null DEFAULT_FLAG/WRITE_OFF_FLAG values — filling with 0")
+    df["DEFAULT_FLAG"]   = df["DEFAULT_FLAG"].fillna(0).astype(int)
+    df["WRITE_OFF_FLAG"] = df["WRITE_OFF_FLAG"].fillna(0).astype(int)
+
     df["RISK_LABEL"]     = df.apply(derive_risk_label, axis=1)
     df["APPROVAL_LABEL"] = df.apply(derive_approval_label, axis=1)
 
