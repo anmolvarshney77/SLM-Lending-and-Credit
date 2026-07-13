@@ -236,10 +236,14 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     df["EMI_INCOME_RATIO_PCT"] = (df["FOIR"] * 100).round(1)
 
     # Credit Utilization: what fraction of sanctioned amount remains outstanding
-    # Guard against zero sanction amounts
+    # Guard against zero sanction amounts — treated as fully utilized (1.5 cap)
+    # rather than left as NaN, which would otherwise leak "nan%" into prompts.
+    n_zero_sanction = (df["SANCTION_AMOUNT"] == 0).sum()
+    if n_zero_sanction:
+        print(f"[Feat]  {n_zero_sanction} records with SANCTION_AMOUNT = 0 — CREDIT_UTILIZATION set to cap (1.5)")
     df["CREDIT_UTILIZATION"] = (
         df["OUTSTANDING_BALANCE"] / df["SANCTION_AMOUNT"].replace(0, np.nan)
-    ).clip(upper=1.5).round(4)   # cap at 150% (can exceed 1.0 due to interest)
+    ).clip(upper=1.5).round(4).fillna(1.5)   # cap at 150% (can exceed 1.0 due to interest)
 
     # IS_DELINQUENT: binary flag for current active delinquency
     # Also mark records with null LAST_PAYMENT_DATE as delinquent
