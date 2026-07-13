@@ -7,6 +7,13 @@ model:
   name: "meta-llama/Llama-3.2-3B-Instruct"
   # Fallback if Llama is unavailable (no HF gating, similar capability)
   fallback: "microsoft/phi-2"
+  # Phi-2's attention module has no "o_proj" (it uses "dense"), so the primary
+  # model's target_modules below don't match — use this set when the fallback loads.
+  fallback_target_modules:
+    - "q_proj"
+    - "k_proj"
+    - "v_proj"
+    - "dense"
 
 # ── Quantization (QLoRA) ─────────────────────────────────────
 # 4-bit NF4 quantization keeps the model within 8–16 GB VRAM.
