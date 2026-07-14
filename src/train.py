@@ -210,6 +210,9 @@ def run_training(config: dict):
             for ex in example
         ]
 
+    # `model` is already PEFT-wrapped (get_peft_model above) — do NOT also pass
+    # peft_config here. SFTTrainer applies its own get_peft_model() when given
+    # a peft_config, which would wrap the PeftModel a second time.
     trainer = SFTTrainer(
         model=model,
         tokenizer=tokenizer,
@@ -218,7 +221,6 @@ def run_training(config: dict):
         formatting_func=formatting_func,
         max_seq_length=t_cfg["max_seq_length"],
         args=training_args,
-        peft_config=lora_config,
     )
 
     # ── 8. Train ─────────────────────────────────────────────
