@@ -250,13 +250,14 @@ def formatting_func(example):
         add_generation_prompt=False
     )
 
-# Stable SFTTrainer initialization
+# `model` (get_peft_model(base_model, lora_config)) is already LoRA-wrapped —
+# pass that, not base_model, and don't also pass peft_config or SFTTrainer
+# will try to re-apply LoRA on top of the adapters already injected above.
 trainer = SFTTrainer(
-    model=base_model,
+    model=model,
     train_dataset=train_ds,
     formatting_func=formatting_func,
     args=training_args,
-    peft_config=lora_config,
 )
 
 print(f'Fast Mode Enabled | Target Steps: 30')
